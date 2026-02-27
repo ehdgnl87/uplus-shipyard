@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LG유플러스 조선소 식단표 특판</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        uplus: {
+                            magenta: '#E6007E',
+                            black: '#000000',
+                            gray: '#F0F0F0',
+                            darkgray: '#333333',
+                            pink: '#FFD1EA'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Pretendard', 'Malgun Gothic', 'Dotum', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        .scroll-hidden::-webkit-scrollbar {
+            display: none;
+        }
+        .scroll-hidden {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .fade-in-up {
+            animation: fadeInUp 0.8s ease-out forwards;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        /* 탭 클릭 시 강조 팝업 애니메이션 */
+        @keyframes popIn {
+            0% { opacity: 0; transform: scale(0.95); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        .animate-pop-in {
+            animation: popIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        
+        .delay-100 { animation-delay: 0.1s; }
+        .delay-200 { animation-delay: 0.2s; }
+        .delay-300 { animation-delay: 0.3s; }
+        
+        .chat-bubble {
+            position: relative;
+            background: #ffffff;
+            border-radius: 1rem;
+            padding: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .chat-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 20px;
+            border-width: 10px 10px 0;
+            border-style: solid;
+            border-color: #ffffff transparent;
+        }
+        /* 라디오 버튼 선택 시 배경 하이라이트 적용 */
+        input[type="radio"]:checked + div {
+            border-color: #E6007E;
+            background-color: #fff0f7;
+        }
+    </style>
+    <!-- Chosen Palette: LG U+ Brand Identity (White, Light Gray, Black, Magenta #E6007E) -->
+</head>
+<body class="bg-white text-gray-800 antialiased font-sans">
+
+    <!-- Header -->
+    <header class="fixed top-0 w-full z-50 bg-white/95 backdrop-blur-sm border-b border-gray-100 shadow-sm">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
+            <h1 class="text-xl font-bold tracking-tight text-black">
+                LG U+ <span class="text-xs font-normal text-gray-500 ml-2">| 조선소 식단표 특판</span>
+            </h1>
+            <button onclick="scrollToSection('cta-section')" class="bg-uplus-magenta text-white px-4 py-2 rounded-full text-sm font-bold hover:bg-pink-600 transition-colors shadow-lg">
+                상담 신청하기
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="pt-16">
+
+        <!-- 1. Hero Section -->
+        <section class="relative pt-12 pb-20 px-4 overflow-hidden" style="background-image: url('메인베너.jpg'); background-size: cover; background-position: center;">
+            <!-- 이미지 배경 위 텍스트 가독성을 위한 반투명 화이트 오버레이 -->
+            <div class="absolute inset-0 bg-white/85 backdrop-blur-sm"></div>
+            
+            <div class="max-w-4xl mx-auto text-center relative z-10">
+                <span class="inline-block bg-uplus-pink text-uplus-magenta px-3 py-1 rounded-full text-sm font-bold mb-4 fade-in-up">
+                    조선소 근로자 및 가족 대상 프로모션
+                </span>
+                <h2 class="text-4xl md:text-5xl font-extrabold leading-tight mb-6 text-gray-900 fade-in-up delay-100">
+                    지금 쓰던 폰 그대로<br>
+                    유심만 바꿔도<br>
+                </h2>
+                
+                <div class="bg-white p-6 rounded-2xl shadow-xl max-w-lg mx-auto mb-6 border border-gray-100 fade-in-up delay-200">
+                    <p class="text-4xl font-black text-uplus-magenta">현금 30만원 <span class="text-2xl text-black">즉시 지급! 💸</span></p>
+                </div>
+                
+                <!-- 100만원 혜택 강조 박스 -->
+                <div class="bg-white p-6 rounded-2xl shadow-xl max-w-lg mx-auto mb-8 relative overflow-hidden fade-in-up delay-300">
+                    <div class="absolute top-0 left-0 w-full h-1 bg-uplus-magenta"></div>
+                    <p class="text-lg font-bold text-gray-800 mb-1">인터넷 + TV 동시 신청 시</p>
+                    <p class="text-3xl font-black text-uplus-magenta">현금 100만원 <span class="text-xl text-black">지급! 🔥</span></p>
+                    <span class="text-sm mt-3 block text-gray-600">복잡한 절차 없이 쉬는 시간에 폰으로 쓱- 신청하세요.</span>
+                </div>
+
+                <div class="flex flex-col sm:flex-row justify-center gap-4 fade-in-up delay-300">
+                    <button onclick="scrollToSection('calculator-section')" class="bg-uplus-magenta text-white text-lg px-8 py-4 rounded-xl font-bold shadow-lg hover:scale-105 transition-transform flex items-center justify-center gap-2">
+                        <span>👉 지원금 한눈에 확인하기</span>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="absolute top-0 left-0 w-32 h-32 bg-uplus-pink rounded-full blur-3xl opacity-30 -translate-x-1/2 -translate-y-1/2"></div>
+            <div class="absolute bottom-0 right-0 w-64 h-64 bg-gray-200 rounded-full blur-3xl opacity-30 translate-x-1/3 translate-y-1/3 z-0"></div>
+        </section>
+
+        <!-- 2. Interactive Benefit Estimator (Radio buttons + Custom input) -->
+        <section id="calculator-section" class="py-16 px-4 bg-white">
+            <div class="max-w-5xl mx-auto">
+                <div class="text-center mb-10">
+                    <h3 class="text-2xl font-bold mb-2">💰 혜택 시뮬레이터</h3>
+                    <p class="text-gray-500">원하시는 혜택 <span class="text-uplus-magenta font-bold">1가지</span>를 선택해보세요.</p>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-8 items-center">
+                    <!-- Controls -->
+                    <div class="bg-gray-50 p-6 rounded-2xl border border-gray-200">
+                        <h4 class="font-bold text-lg mb-4">어떤 상품을 원하시나요?</h4>
+                        <div class="space-y-4">
+                            <!-- Radio Button 1 -->
+                            <label class="relative block cursor-pointer">
+                                <!-- data-normal-benefit 속성에 원하는 일반가입 비교금액을 입력하세요 (현재 0만원 셋팅) -->
+                                <input type="radio" name="benefit_type" value="30" data-normal-benefit="15" class="sr-only" checked onchange="updateChart()">
+                                <div class="flex items-center p-4 bg-white rounded-xl shadow-sm border-2 border-transparent hover:border-uplus-pink transition-colors">
+                                    <div class="w-6 h-6 rounded border-2 border-gray-300 flex items-center justify-center transition-colors">
+                                        <svg class="w-4 h-4 text-white opacity-0 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                                    </div>
+                                    <div class="ml-4 flex-1">
+                                        <span class="block font-bold text-gray-900">유심 단독 개통</span>
+                                        <span class="text-sm text-gray-500">쓰던 폰 그대로 번호이동</span>
+                                    </div>
+                                    <span class="ml-auto font-bold text-uplus-magenta">+30만원</span>
+                                </div>
+                            </label>
+
+                            <!-- Radio Button 2 -->
+                            <label class="relative block cursor-pointer">
+                                <!-- data-normal-benefit 속성에 원하는 일반가입 비교금액을 입력하세요 (현재 10만원 셋팅) -->
+                                <input type="radio" name="benefit_type" value="50" data-normal-benefit="40" class="sr-only" onchange="updateChart()">
+                                <div class="flex items-center p-4 bg-white rounded-xl shadow-sm border-2 border-transparent hover:border-uplus-pink transition-colors">
+                                    <div class="w-6 h-6 rounded border-2 border-gray-300 flex items-center justify-center transition-colors">
+                                        <svg class="w-4 h-4 text-white opacity-0 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                                    </div>
+                                    <div class="ml-4 flex-1">
+                                        <span class="block font-bold text-gray-900">인터넷 + TV 가입</span>
+                                        <span class="text-sm text-gray-500">현금 지원 및 상품권</span>
+                                    </div>
+                                    <span class="ml-auto font-bold text-uplus-magenta">+50만원</span>
+                                </div>
+                            </label>
+
+                            <!-- Radio Button 3 -->
+                            <label class="relative block cursor-pointer">
+                                <!-- data-normal-benefit 속성에 원하는 일반가입 비교금액을 입력하세요 (현재 15만원 셋팅) -->
+                                <input type="radio" name="benefit_type" value="100" data-normal-benefit="65" class="sr-only" onchange="updateChart()">
+                                <div class="flex items-center p-4 bg-white rounded-xl shadow-sm border-2 border-transparent hover:border-uplus-pink transition-colors">
+                                    <div class="w-6 h-6 rounded border-2 border-gray-300 flex items-center justify-center transition-colors">
+                                        <svg class="w-4 h-4 text-white opacity-0 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                                    </div>
+                                    <div class="ml-4 flex-1">
+                                        <span class="block font-bold text-gray-900">유심 단독 & 인터넷+TV 동시</span>
+                                        <span class="text-sm text-gray-500">특판 풀 패키지 혜택</span>
+                                    </div>
+                                    <span class="ml-auto font-bold text-uplus-magenta">+100만원</span>
+                                </div>
+                            </label>
+                        </div>
+                        <div class="mt-6 pt-6 border-t border-gray-200 flex justify-between items-center">
+                            <span class="text-gray-600 font-medium">선택 상품 예상 혜택</span>
+                            <span class="text-3xl font-black text-uplus-magenta" id="total-benefit-display">300,000원</span>
+                        </div>
+                    </div>
+
+                    <!-- Chart Visualization & Custom Input -->
+                    <div class="bg-white p-5 rounded-2xl shadow-lg border border-gray-100 flex flex-col justify-center">
+                        <div class="text-center mb-4">
+                            <span class="text-sm font-semibold text-gray-500 uppercase tracking-wide">일반가입 vs 특판 혜택 비교</span>
+                        </div>
+
+                        <div class="chart-container">
+                            <canvas id="benefitChart"></canvas>
+                        </div>
+                        <p class="text-center text-xs text-gray-400 mt-4">* 위 금액은 최대 지원금 기준 예상치이며, 요금제에 따라 상이할 수 있습니다.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. Problem & Recommendations -->
+        <section class="py-16 px-4 bg-uplus-gray">
+            <div class="max-w-6xl mx-auto">
+                <div class="text-center mb-12">
+                    <h3 class="text-2xl md:text-3xl font-bold mb-3">
+                        "매일 매일 바쁜 하루,<br>통신사 이동 번거로우셨죠?"
+                    </h3>
+                    <p class="text-gray-600">LG유플러스 공식 파트너가 알아서 다~ 해드립니다!</p>
+                </div>
+
+                <div class="flex justify-center mb-8">
+                    <div class="bg-white p-1 rounded-full shadow-md inline-flex">
+                        <button onclick="switchTab('premium')" id="tab-premium" class="px-6 py-2 rounded-full text-sm font-bold bg-uplus-black text-white transition-all">프리미엄</button>
+                        <button onclick="switchTab('budget')" id="tab-budget" class="px-6 py-2 rounded-full text-sm font-bold text-gray-500 hover:text-black transition-all">실속형</button>
+                        <button onclick="switchTab('kids')" id="tab-kids" class="px-6 py-2 rounded-full text-sm font-bold text-gray-500 hover:text-black transition-all">자녀용</button>
+                    </div>
+                </div>
+
+                <div class="max-w-md mx-auto md:max-w-4xl">
+                    <div id="content-premium" class="bg-white rounded-2xl overflow-hidden shadow-2xl md:flex animate-pop-in">
+                        <div class="md:w-1/2 bg-gray-100 flex items-center justify-center overflow-hidden">
+                            <!-- 이모티콘 대신 배너1.jpg 이미지 적용 -->
+                            <img src="배너1.jpg" alt="프리미엄 스마트폰" class="w-full h-full object-cover min-h-[250px]">
+                        </div>
+                        <div class="p-8 md:w-1/2 flex flex-col justify-center">
+                            <div class="uppercase tracking-wide text-sm text-uplus-magenta font-bold">가장 먼저 만나는 혁신</div>
+                            <h4 class="block mt-1 text-2xl leading-tight font-black text-black">갤럭시 S26</h4>
+                            <p class="mt-2 text-gray-500">누구보다 빠르게, 가장 큰 혜택으로 최신폰을 손에 쥐세요! 사전예약 특급 혜택 적용 중.</p>
+                        </div>
+                    </div>
+                    <div id="content-budget" class="hidden bg-white rounded-2xl overflow-hidden shadow-2xl md:flex animate-pop-in">
+                        <div class="md:w-1/2 bg-gray-100 flex items-center justify-center overflow-hidden">
+                            <!-- 이모티콘 대신 배너2.jpg 이미지 적용 -->
+                            <img src="배너2.jpg" alt="실속형 스마트폰" class="w-full h-full object-cover min-h-[250px]">
+                        </div>
+                        <div class="p-8 md:w-1/2 flex flex-col justify-center">
+                            <div class="uppercase tracking-wide text-sm text-uplus-magenta font-bold">현장 가성비 끝판왕</div>
+                            <h4 class="block mt-1 text-2xl leading-tight font-black text-black">갤럭시 버디4</h4>
+                            <p class="mt-2 text-gray-500">부담 없는 가격! 튼튼하고 실속 있는 가성비폰/세컨폰 강력 추천. 최저가 0원 세팅 가능.</p>
+                        </div>
+                    </div>
+                    <div id="content-kids" class="hidden bg-white rounded-2xl overflow-hidden shadow-2xl md:flex animate-pop-in">
+                        <div class="md:w-1/2 bg-gray-100 flex items-center justify-center overflow-hidden">
+                            <!-- 이모티콘 대신 배너3.jpg 이미지 적용 -->
+                            <img src="배너3.jpg" alt="자녀용 키즈폰" class="w-full h-full object-cover min-h-[250px]">
+                        </div>
+                        <div class="p-8 md:w-1/2 flex flex-col justify-center">
+                            <div class="uppercase tracking-wide text-sm text-uplus-magenta font-bold">우리 아이 첫 스마트폰</div>
+                            <h4 class="block mt-1 text-2xl leading-tight font-black text-black">키즈폰 무너에디션2</h4>
+                            <p class="mt-2 text-gray-500">위치 추적, 유해 차단 완비! 아빠,엄마가 일하는 동안에도 우리 아이 안전 안심.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. Scarcity & Details -->
+        <section class="py-12 bg-uplus-pink/30 border-y border-uplus-pink/50">
+            <div class="max-w-4xl mx-auto px-4 text-center">
+                <div class="inline-block bg-uplus-magenta text-white font-bold px-4 py-1 rounded mb-4 animate-pulse">
+                    🚨 긴급 공지
+                </div>
+                <h3 class="text-2xl font-bold mb-2">4월 30일까지만 진행되는 한정 특판 혜택입니다.</h3>
+                <p class="text-gray-600 mb-6">기간 종료 후에는 혜택이 일반 조건으로 변경됩니다.</p>
+            </div>
+        </section>
+
+        <!-- 5. Trust & FAQ -->
+        <section class="py-16 px-4 bg-white">
+            <div class="max-w-5xl mx-auto grid md:grid-cols-2 gap-12">
+                <div>
+                    <h3 class="text-2xl font-bold mb-6">🏆 임직원 특판 누적 개통<br><span class="text-uplus-magenta">572건 돌파!</span></h3>
+                    <div class="flex items-center mb-8 bg-gray-50 p-4 rounded-xl">
+                        <div class="w-16 h-16 bg-gray-300 rounded-full flex items-center justify-center text-2xl mr-4 overflow-hidden">👤</div>
+                        <div>
+                            <p class="font-bold text-gray-900">김유플 팀장</p>
+                            <p class="text-sm text-gray-500">LG유플러스 공식 파트너 / 조선소 특판 담당</p>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <div class="chat-bubble">
+                            <p class="text-sm font-medium">"반신반의했는데 진짜 유심만 바꿨는데 당일에 입금됐네요! 작업반 동료들한테도 쫙 돌렸습니다 ㅋㅋ"</p>
+                            <p class="text-xs text-gray-400 mt-2 text-right">- 박OO 님</p>
+                        </div>
+                        <div class="chat-bubble">
+                            <p class="text-sm font-medium">"가족결합까지 하니까 요금이 진짜 확 줄었어요. 진작 할 걸 그랬네요! 사은품도 넉넉히 챙겨주셔서 감사합니다."</p>
+                            <p class="text-xs text-gray-400 mt-2 text-right">- 최OO 님</p>
+                        </div>
+                        <div class="chat-bubble">
+                            <p class="text-sm font-medium">"현장에서 폰 잘 터지고 혜택도 많이 받아서 기분 최고입니다 ㅋㅋ 담에 폰 바꿀 때 또 연락드릴게요."</p>
+                            <p class="text-xs text-gray-400 mt-2 text-right">- 정OO 님</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="text-xl font-bold mb-4">자주 묻는 질문</h3>
+                    <div class="space-y-3">
+                        <div class="border border-gray-200 rounded-lg overflow-hidden">
+                            <button class="w-full text-left p-4 font-bold bg-gray-50 flex justify-between items-center" onclick="toggleFaq('faq1')">
+                                <span>Q. 쓰던 폰 그대로 유심만 바꿔도 혜택 받나요?</span>
+                                <span class="text-uplus-magenta">▼</span>
+                            </button>
+                            <div id="faq1" class="p-4 bg-white text-gray-600 text-sm">
+                                네, 맞습니다! 비싼 새 기기를 구매하실 필요 없이, 통신사만 LG유플러스로 이동하시면 약속드린 혜택을 당일 즉시 챙겨드립니다.
+                            </div>
+                        </div>
+                        <!-- 신규 FAQ 2 -->
+                        <div class="border border-gray-200 rounded-lg overflow-hidden">
+                            <button class="w-full text-left p-4 font-bold bg-gray-50 flex justify-between items-center" onclick="toggleFaq('faq2')">
+                                <span>Q. 위약금이 남아있는데 어떡하죠?</span>
+                                <span class="text-uplus-magenta">▼</span>
+                            </button>
+                            <div id="faq2" class="hidden p-4 bg-white text-gray-600 text-sm">
+                                걱정 마세요! 전문 컨설턴트가 고객님의 남은 약정과 위약금을 꼼꼼히 조회하여, 지원금으로 위약금을 충분히 상쇄할 수 있는지 유리한 방향으로 맞춤 설계해 드립니다.
+                            </div>
+                        </div>
+                        <!-- 신규 FAQ 3 -->
+                        <div class="border border-gray-200 rounded-lg overflow-hidden">
+                            <button class="w-full text-left p-4 font-bold bg-gray-50 flex justify-between items-center" onclick="toggleFaq('faq3')">
+                                <span>Q. 개통 절차는 어떻게 되나요? 당일 개통되나요?</span>
+                                <span class="text-uplus-magenta">▼</span>
+                            </button>
+                            <div id="faq3" class="hidden p-4 bg-white text-gray-600 text-sm">
+                                전화/카톡 상담 후 원하시는 장소로 유심 및 기기를 발송해 드립니다. 수령 후 연락주시면 5분 만에 즉시 개통 처리되어 바로 사용 가능합니다!
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 6. CTA Section (SMS Integration added) -->
+        <section id="cta-section" class="py-20 px-4 bg-gray-900 text-white text-center">
+            <div class="max-w-lg mx-auto">
+                <h2 class="text-3xl font-bold mb-2">나의 혜택 확인 및 상담</h2>
+                <p class="text-gray-400 mb-8">단순 문의도 환영합니다! 편한 방법으로 연락 주세요.</p>
+                
+                <!-- 기존: 카카오톡/폼 상담 제출 -->
+                <form onsubmit="submitForm(event)" class="space-y-4 bg-gray-800 p-6 rounded-2xl shadow-2xl border border-gray-700 mb-8">
+                    <div>
+                        <input type="text" placeholder="이름을 입력해주세요" required class="w-full px-4 py-3 rounded-lg bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:border-uplus-magenta">
+                    </div>
+                    <div>
+                        <input type="tel" placeholder="연락처 (010-XXXX-XXXX)" required class="w-full px-4 py-3 rounded-lg bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:border-uplus-magenta">
+                    </div>
+                    <button type="submit" class="w-full bg-yellow-400 hover:bg-yellow-500 text-black font-bold py-4 rounded-lg shadow-lg text-lg transition-colors flex items-center justify-center gap-2">
+                        <span>💬 카카오톡 1:1 빠른 상담하기</span>
+                    </button>
+                    <p class="text-xs text-gray-500 mt-2 text-center">고객님의 개인정보는 상담 목적으로만 사용 후 즉시 폐기됩니다.</p>
+                </form>
+
+                <!-- 신규: 다이렉트 문자 발송 폼 -->
+                <div class="mt-10 pt-8 border-t border-gray-700">
+                    <h3 class="text-xl font-bold mb-3 text-uplus-pink">📱 담당자 문자 상담 연결</h3>
+                    <p class="text-sm text-gray-400 mb-5">복잡한 입력 없이 클릭 한 번으로 상담 문자를 보낼 수 있습니다.</p>
+                    <button onclick="sendDirectSMS()" class="w-full bg-uplus-magenta text-white font-bold py-4 px-6 rounded-lg hover:bg-pink-600 transition-colors shadow-lg flex items-center justify-center gap-2">
+                        <span>클릭해서 바로 문자 보내기 👉</span>
+                    </button>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-black text-gray-500 py-8 px-4 text-center text-xs">
+        <p class="mb-2">LG유플러스 공식 파트너 | 대표: 홍길동 | 사업자등록번호: 000-00-00000</p>
+        <p>Copyright © LG Uplus Partner. All rights reserved.</p>
+    </footer>
+
+    <!-- Logic -->
+    <script>
+        let benefitChart;
+
+        function initChart() {
+            const ctx = document.getElementById('benefitChart').getContext('2d');
+            Chart.defaults.font.family = "'Pretendard', 'Malgun Gothic', sans-serif";
+
+            benefitChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['일반 가입', '조선소 특판'],
+                    datasets: [{
+                        label: '혜택 금액 (만원)',
+                        data: [10, 30], // 초기 세팅
+                        backgroundColor: [
+                            'rgba(200, 200, 200, 0.5)', 
+                            'rgba(230, 0, 126, 0.8)'  
+                        ],
+                        borderColor: [
+                            'rgba(200, 200, 200, 1)',
+                            'rgba(230, 0, 126, 1)'
+                        ],
+                        borderWidth: 1,
+                        borderRadius: 8,
+                        barThickness: 50
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100, 
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '만원';
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.parsed.y + '만원 혜택';
+                                }
+                            }
+                        }
+                    },
+                    animation: {
+                        duration: 1000,
+                        easing: 'easeOutQuart'
+                    }
+                }
+            });
+        }
+
+        function updateChart() {
+            // 1. 라디오 버튼 중 선택된 값 가져오기 (특판 혜택)
+            const selectedRadio = document.querySelector('input[name="benefit_type"]:checked');
+            const specialBenefit = selectedRadio ? parseInt(selectedRadio.value) : 30;
+
+            // 2. 일반 가입 혜택 고정 (HTML 태그의 data-normal-benefit 속성에서 가져옴)
+            const normalBenefit = selectedRadio ? parseInt(selectedRadio.dataset.normalBenefit) : 0;
+
+            // 숫자 애니메이션 업데이트
+            animateValue("total-benefit-display", parseInt(document.getElementById("total-benefit-display").innerText.replace(/[^0-9]/g, "")) || 0, specialBenefit * 10000, 800);
+
+            // 차트 데이터 업데이트
+            benefitChart.data.datasets[0].data = [normalBenefit, specialBenefit];
+            benefitChart.update();
+        }
+
+        function animateValue(id, start, end, duration) {
+            const obj = document.getElementById(id);
+            const range = end - start;
+            let current = start;
+            const increment = end > start ? 10000 : -10000;
+            const stepTime = Math.abs(Math.floor(duration / (range / increment)));
+            
+            if (range === 0) return;
+
+            const timer = setInterval(function() {
+                current += increment;
+                if ((increment > 0 && current >= end) || (increment < 0 && current <= end)) {
+                    current = end;
+                    clearInterval(timer);
+                }
+                obj.innerHTML = current.toLocaleString() + "원";
+            }, stepTime > 10 ? stepTime : 10);
+        }
+
+        // 다이렉트 SMS 발송 기능
+        function sendDirectSMS() {
+            // 실제 담당자 번호로 변경하세요
+            const agentPhoneNumber = "01080805301"; 
+            const textBody = `[조선소 특판 상담요청]\n상담을 요청합니다. 연락 부탁드립니다.`;
+            
+            // 모바일 OS 호환성을 위해 sms URI 구성
+            const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+            let smsUri = `sms:${agentPhoneNumber}?body=${encodeURIComponent(textBody)}`;
+            
+            // 구형 iOS 대응 (최신 iOS는 ?body= 도 지원함)
+            if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
+                // iOS 13 미만을 타겟으로 할 경우 '&' 사용, 최신은 '?' 사용. 
+                // 보편적으로 '?body=' 가 최신 기기에서 잘 동작합니다.
+            }
+
+            window.location.href = smsUri;
+        }
+
+        function switchTab(tabName) {
+            ['premium', 'budget', 'kids'].forEach(t => {
+                const btn = document.getElementById(`tab-${t}`);
+                const content = document.getElementById(`content-${t}`);
+                if (t === tabName) {
+                    btn.classList.remove('text-gray-500');
+                    btn.classList.add('bg-uplus-black', 'text-white');
+                    content.classList.remove('hidden');
+                    // 애니메이션 리셋 후 재적용
+                    content.classList.remove('animate-pop-in');
+                    void content.offsetWidth;
+                    content.classList.add('animate-pop-in');
+                } else {
+                    btn.classList.add('text-gray-500');
+                    btn.classList.remove('bg-uplus-black', 'text-white');
+                    content.classList.add('hidden');
+                }
+            });
+        }
+
+        function toggleFaq(id) {
+            const el = document.getElementById(id);
+            if (el.classList.contains('hidden')) {
+                el.classList.remove('hidden');
+            } else {
+                el.classList.add('hidden');
+            }
+        }
+
+        function scrollToSection(id) {
+            const element = document.getElementById(id);
+            const offset = 80; 
+            const bodyRect = document.body.getBoundingClientRect().top;
+            const elementRect = element.getBoundingClientRect().top;
+            const elementPosition = elementRect - bodyRect;
+            const offsetPosition = elementPosition - offset;
+
+            window.scrollTo({
+                top: offsetPosition,
+                behavior: "smooth"
+            });
+        }
+
+        function submitForm(e) {
+            e.preventDefault();
+            const btn = e.target.querySelector('button');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span>🔄 전송 중...</span>';
+            btn.disabled = true;
+
+            setTimeout(() => {
+                alert("상담 신청이 완료되었습니다! 담당자가 곧 연락드리겠습니다.");
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                e.target.reset();
+            }, 1500);
+        }
+
+        window.addEventListener('load', () => {
+            initChart();
+            updateChart(); 
+            
+            // 스타일 유지를 위한 라디오 클릭 이벤트 리스너 추가 (커스텀 디자인 갱신용)
+            const radios = document.querySelectorAll('input[name="benefit_type"]');
+            radios.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    // 모든 라디오 부모의 스타일 초기화
+                    radios.forEach(r => {
+                        const parent = r.nextElementSibling;
+                        parent.classList.remove('border-uplus-magenta', 'bg-pink-50');
+                        parent.classList.add('border-transparent', 'bg-white');
+                        
+                        // v체크박스 비활성화
+                        const checkBox = parent.querySelector('.w-6.h-6');
+                        if(checkBox) {
+                            checkBox.classList.remove('border-uplus-magenta', 'bg-uplus-magenta');
+                            checkBox.classList.add('border-gray-300');
+                            const checkIcon = checkBox.querySelector('svg');
+                            checkIcon.classList.remove('opacity-100');
+                            checkIcon.classList.add('opacity-0');
+                        }
+                    });
+                    
+                    // 선택된 라디오 부모 스타일 적용
+                    if(this.checked) {
+                        const parent = this.nextElementSibling;
+                        parent.classList.remove('border-transparent', 'bg-white');
+                        parent.classList.add('border-uplus-magenta', 'bg-pink-50');
+                        
+                        // v체크박스 활성화
+                        const checkBox = parent.querySelector('.w-6.h-6');
+                        if(checkBox) {
+                            checkBox.classList.remove('border-gray-300');
+                            checkBox.classList.add('border-uplus-magenta', 'bg-uplus-magenta');
+                            const checkIcon = checkBox.querySelector('svg');
+                            checkIcon.classList.remove('opacity-0');
+                            checkIcon.classList.add('opacity-100');
+                        }
+                    }
+                });
+            });
+            
+            // 초기 로딩 시 디자인 적용
+            document.querySelector('input[name="benefit_type"]:checked').dispatchEvent(new Event('change'));
+        });
+
+    </script>
+</body>
+</html>
